@@ -97,6 +97,9 @@ function Sensor(port::AbstractString, hostname::AbstractString)
     Sensor(find_device_on_port(RemoteNode("$(SYS_ROOT)/class/lego-sensor", hostname), port))
 end
 
+write(device::AbstractDevice, path::AbstractString, data::AbstractString) = write(device.node, path, data)
+read(device::AbstractDevice, args...) = read(device.node, args...)
+read(node::AbstractNode, path::AbstractString, _type::Union{Integer, AbstractFloat}) = parse(_type, read(node, path))
 
 macro readable(name, T, parser)
     return quote
@@ -136,6 +139,10 @@ as_int(x) = parse(Int, x)
 as_float(x) = parse(Float64, x)
 as_string_set(x) = Set(split(chomp(x)))
 is_positive(x) = x > 0
+in_set(args...) = begin 
+    set = Set(args...)
+    x -> in(x, set)
+end
 
 @readable port_name AbstractDevice as_string
 @readable commands AbstractDevice as_string_set
@@ -159,20 +166,23 @@ is_positive(x) = x > 0
 @readable count_per_rot Motor as_int
 @readable duty_cycle Motor as_int
 @readwriteable duty_cycle_sp Motor as_int is_positive
-@readwriteable encoder_polarity Motor as_string x -> x == "normal" || x == "inversed"
-@readwriteable polarity Motor as_string x-> x == "normal" || x == "inversed"
-@readwriteable speed_regulation Motor as_string x-> x == "on" || x == "off"
-@readwriteable(speed_sp,
-               Motor,
-               as_string,
-               x-> x > 0)
+@readwriteable encoder_polarity Motor as_string in_set("normal", "inversed")
+@readwriteable polarity Motor as_string in_set("normal", "inversed")
+@readwriteable speed_regulation Motor as_string in_set("on", "off")
+@readwriteable speed_sp Motor as_string is_positive
 
 @readwriteable command Motor as_string x->true # todo: validate
 @readwriteable stop_command Motor as_string x->true # todo: validate
 
-write(device::AbstractDevice, path::AbstractString, data::AbstractString) = write(device.node, path, data)
-read(device::AbstractDevice, args...) = read(device.node, args...)
-read(node::AbstractNode, path::AbstractString, _type::Union{Integer, AbstractFloat}) = parse(_type, read(node, path))
+function values(sensor::Sensor)
+    values = Array(Float64, num_values(sensor))
+    dec = decimals(sensor)
+    multiplier = 10.0 ^ (-dec)
+    for j = 1:length(values)
+        values[j] = multiplier * parse(Int, chomp(read(sensor, "value$(j-1)")))
+    end
+    values
+end
 
 function run_at_speed(motor::Motor, speed=100)
     speed_regulation(motor, "on")

@@ -2,6 +2,7 @@ import zmq
 import subprocess
 import os
 import stat
+import traceback
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
@@ -28,12 +29,12 @@ class FileCache(object):
         return f.read()
 
     def get_file(self, fname):
-        if fname not in self._files:
+        if fname in self._files:
             return self._files[fname]
         else:
             modes_available = stat.S_IMODE(os.stat(fname)[stat.ST_MODE])
-            readable = mode & stat.S_IRGRP
-            writeable = mode & stat.S_IWGRP
+            readable = modes_available & stat.S_IRGRP
+            writeable = modes_available & stat.S_IWGRP
 
             if readable and writeable:
                 file_mode = 'a+'
@@ -42,7 +43,7 @@ class FileCache(object):
             else:
                 file_mode = 'r'
 
-            f = open(fname, mode, 0)
+            f = open(fname, file_mode, 0)
             self._files[fname] = f
             return f
 
@@ -50,18 +51,15 @@ cache = FileCache()
 while True:
     try:
         message = socket.recv()
-        print("Received request: %s" % message)
         if message.startswith("w:"):
             prefix, data, path = message.split(":")
             path = os.path.abspath(path)
             cache.write(path, data)
             socket.send("ok")
-    #         command = "echo %s > %s" % (data, path)
         elif message.startswith("r:"):
             prefix, path = message.split(":")
             path = os.path.abspath(path)
             socket.send(cache.read(path))
-    #         command = "cat %s" % path
         elif message.startswith("l:"):
             prefix, path = message.split(":")
             path = os.path.abspath(path)
@@ -72,5 +70,8 @@ while True:
             print "unrecognized prefix: %s" % message[:2]
             continue
     except Exception as e:
-        print "call failed with error: %s" %e
+        print("Error on request: %s" % message)
+        print "call failed with error: "
+        print e
+        traceback.print_exc()
         socket.send("error")
