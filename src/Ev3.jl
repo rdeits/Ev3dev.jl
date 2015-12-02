@@ -138,9 +138,10 @@ as_string(s) = strip(s)
 as_int(x) = parse(Int, x)
 as_float(x) = parse(Float64, x)
 as_string_set(x) = Set(split(chomp(x)))
-is_positive(x) = x > 0
-in_set(args...) = begin 
-    set = Set(args...)
+is_positive_integer(x) = x > 0 && typeof(x) <: Integer
+is_integer(x) = typeof(x) <: Integer
+function in_set(args...)
+    set = Set(args)
     x -> in(x, set)
 end
 
@@ -159,18 +160,17 @@ end
 @readable mode Sensor as_string
 @readable bin_data Sensor as_string
 @readable bin_data_format Sensor as_string
-@readwriteable poll_ms Sensor as_int is_positive
+@readwriteable poll_ms Sensor as_int is_positive_integer
 
 @readable position Motor as_int
-@readwriteable speed_sp Motor as_int is_positive
 @readable count_per_rot Motor as_int
 @readable duty_cycle Motor as_int
-@readwriteable duty_cycle_sp Motor as_int is_positive
+@readwriteable duty_cycle_sp Motor as_int is_positive_integer
+@readwriteable speed_sp Motor as_int is_integer
+@readwriteable position_sp Motor as_int is_integer
 @readwriteable encoder_polarity Motor as_string in_set("normal", "inversed")
 @readwriteable polarity Motor as_string in_set("normal", "inversed")
 @readwriteable speed_regulation Motor as_string in_set("on", "off")
-@readwriteable speed_sp Motor as_string is_positive
-
 @readwriteable command Motor as_string x->true # todo: validate
 @readwriteable stop_command Motor as_string x->true # todo: validate
 
@@ -194,6 +194,9 @@ function stop(motor::Motor, stop_command_name="coast")
     stop_command(motor, stop_command_name)
     command(motor, "stop")
 end
+
+
+include("Mapping.jl")
 
 
 end
