@@ -55,7 +55,7 @@ function list(node::RemoteNode)
     msg = ZMQ.recv(node.socket)
     out = convert(IOStream, msg)
     seek(out, 0)
-    return split(bytestring(out), "\n")
+    return split(chomp(bytestring(out)), "\n")
 end
 
 function find_device_on_port(node::RemoteNode, port_name)
@@ -65,6 +65,7 @@ function find_device_on_port(node::RemoteNode, port_name)
             return devnode
         end
     end
+    error("Could not find device with port_name: $(port_name) on node: $(node)")
 end
 
 abstract AbstractDevice
