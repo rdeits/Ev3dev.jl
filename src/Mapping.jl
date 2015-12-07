@@ -137,8 +137,6 @@ end
 
 Map() = Map(Tuple{Real,Real}[], AffineTransform[])
 
-+(m1::Map, m2::Map) = Map([m1.points; m2.points], [m1.path; m2.path])
-
 function prep!(robot::Robot)
     speed_regulation(robot.motors.right, "on")
     speed_regulation(robot.motors.left, "on")

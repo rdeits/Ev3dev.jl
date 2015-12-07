@@ -37,18 +37,27 @@ function setup_mapping_behaviors(timeout=30)
     LOOK_RIGHT = Behavior(look_right)
     LOOK_LEFT = Behavior(look_left)
 
-    add_transition!(FORWARD, Transition((robot, t, state, input) -> input.ultrasound < 0.25, 
-                                        TURN_RIGHT))
-    add_transition!(TURN_RIGHT, Transition((robot, t, state, input) -> input.ultrasound > 0.5,
-                                           FORWARD))
+    add_transition!(FORWARD, 
+                    Transition((robot, t, state, input) -> input.ultrasound < 0.25, 
+                               TURN_RIGHT))
+    add_transition!(TURN_RIGHT, 
+                    Transition((robot, t, state, input) -> input.ultrasound > 0.5,
+                               FORWARD))
+    add_transition!(LOOK_RIGHT,
+                    Transition((robot, t, state, input) -> input.head_angle < -pi/4, 
+                               LOOK_LEFT))
+    add_transition!(LOOK_LEFT, 
+                    Transition((robot, t, state, input) -> input.head_angle > pi/4, 
+                               LOOK_RIGHT))
 
-    add_transition!(LOOK_RIGHT, Transition((robot, t, state, input) -> input.head_angle < -pi/4, LOOK_LEFT))
-    add_transition!(LOOK_LEFT, Transition((robot, t, state, input) -> input.head_angle > pi/4, LOOK_RIGHT))
     for behavior in [FORWARD, TURN_RIGHT, LOOK_RIGHT, LOOK_LEFT]
-        add_transition!(behavior, Transition((robot, t, state, input) -> t > timeout,
-                                              STOP))
+        add_transition!(behavior, 
+                        Transition((robot, t, state, input) -> t > timeout,
+                                   STOP))
     end
-    add_transition!(STOP, Transition((robot, t, state, input) -> true, DONE))
+    add_transition!(STOP,
+                    Transition((robot, t, state, input) -> true, 
+                               DONE))
 
     BehaviorSet([FORWARD, TURN_RIGHT, STOP, DONE, LOOK_RIGHT, LOOK_LEFT], [FORWARD, LOOK_RIGHT], DONE)
 end
