@@ -7,7 +7,7 @@ end
 
 function turn_right(robot, t, state, input)
     speed_sp(robot.motors.right, -70)
-    speed_sp(robot.motors.left, 20)
+    speed_sp(robot.motors.left, 30)
     command(robot.motors.right, "run-forever")
     command(robot.motors.left, "run-forever")
 end

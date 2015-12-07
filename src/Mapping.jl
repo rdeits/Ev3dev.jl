@@ -141,7 +141,7 @@ function prep!(robot::Robot)
     speed_regulation(robot.motors.right, "on")
     speed_regulation(robot.motors.left, "on")
     speed_regulation(robot.head, "on")
-    speed_sp(robot.head, 100)
+    speed_sp(robot.head, 130)
 end
 
 function shutdown!(robot::Robot)
