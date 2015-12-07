@@ -3,7 +3,7 @@
 # using Ev3
 using AffineTransforms
 
-import Base: start, next, done
+import Base: start, next, done, +
 
 type Sides{T}
     right::T
@@ -50,13 +50,13 @@ function update!(odo::Odometer)
     current_position = position(odo.motor)
     delta = current_position - odo.last_position
     if abs(delta) > odo.ticks_per_revolution / 2
-        @show current_position
-        @show odo.last_position
+        # @show current_position
+        # @show odo.last_position
         delta = mod(delta, odo.ticks_per_revolution)
         if delta > odo.ticks_per_revolution / 2
             delta = delta - odo.ticks_per_revolution
         end
-        @show delta
+        # @show delta
     end
     odo.last_position = current_position
     new_distance = delta * odo.meters_per_tick
@@ -152,27 +152,21 @@ function add_transition!(behavior::Behavior, transition::Transition)
 end
 
 function drive_forward(robot, t, state, input)
-    speed_regulation(robot.motors.right, "on")
-    speed_regulation(robot.motors.left, "on")
-    speed_regulation(robot.head, "on")
-    speed_sp(robot.motors.right, 90)
-    speed_sp(robot.motors.left, 90)
+    speed_sp(robot.motors.right, 60)
+    speed_sp(robot.motors.left, 60)
     command(robot.motors.right, "run-forever")
     command(robot.motors.left, "run-forever")
-    speed_sp(robot.head, -130 * state.head_direction)
-    command(robot.head, "run-forever")
+    position_sp(robot.head, -state.head_direction * 80 * 3)
+    command(robot.head, "run-to-abs-pos")
 end
 
 function turn_right(robot, t, state, input)
-    speed_regulation(robot.motors.right, "on")
-    speed_regulation(robot.motors.left, "on")
-    speed_regulation(robot.head, "on")
-    speed_sp(robot.motors.right, -100)
-    speed_sp(robot.motors.left, 33)
+    speed_sp(robot.motors.right, -70)
+    speed_sp(robot.motors.left, 20)
     command(robot.motors.right, "run-forever")
     command(robot.motors.left, "run-forever")
-    speed_sp(robot.head, -130 * state.head_direction)
-    command(robot.head, "run-forever")
+    position_sp(robot.head, -state.head_direction * 80 * 3)
+    command(robot.head, "run-to-abs-pos")
 end
 
 function stop(robot, t, state, input)
@@ -219,22 +213,37 @@ end
 type Map
     points::Vector{Tuple{Real, Real}}
     path::Vector{AffineTransform}
-
-    Map() = new([], [])
 end
 
-function run_mapping(robot::Robot, timeout=30)
+Map() = Map(Tuple{Real,Real}[], AffineTransform[])
+
++(m1::Map, m2::Map) = Map([m1.points; m2.points], [m1.path; m2.path])
+
+function prep!(robot::Robot)
+    speed_regulation(robot.motors.right, "on")
+    speed_regulation(robot.motors.left, "on")
+    speed_regulation(robot.head, "on")
+    speed_sp(robot.head, 100)
+end
+
+function shutdown!(robot::Robot)
+    map(stop, robot.motors)
+    stop(robot.head)
+end
+
+function run_mapping(robot::Robot; timeout=30, initial_pose=tformeye(2))
     behaviors = setup_mapping_behaviors(timeout)
 
     current_behavior = behaviors.starting
 
-    state = State(tformeye(2),
+    state = State(initial_pose,
                   Sides(0.0, 0.0),
                   0.0,
                   1)
     input = SensorData()
     start_time = time()
     local_map = Map()
+    prep!(robot)
 
     try
         while current_behavior != behaviors.final
@@ -250,12 +259,32 @@ function run_mapping(robot::Robot, timeout=30)
             current_behavior.action(robot, t, state, input)
         end
     finally
-        map(stop, robot.motors)
-        stop(robot.head)
+        shutdown!(robot)
     end
 
     local_map
 end
 
+function default_remote_robot(hostname)
+    meters_per_revolution = 37.2 * 2.54 / 100 / 5 
+    # 37.2 inches in 5 revolutions
+    gyro_port = "in4"
+    us_port = "in1"
+    motor_ports = Sides("outD", "outB")
+    head_port = "outA"
+    distance_between_wheels = 4.5
+    T_origin_to_ultrasound = tformtranslate(0.0254 * [2.0, 0.0])
+    config = RobotConfig(hostname,
+                         meters_per_revolution,
+                         gyro_port,
+                         us_port,
+                         motor_ports,
+                         head_port,
+                         distance_between_wheels,
+                         T_origin_to_ultrasound)
+
+    robot = Robot(config)
+    robot
+end
 
 # end

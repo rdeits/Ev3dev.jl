@@ -48,6 +48,7 @@ class FileCache(object):
             return f
 
 cache = FileCache()
+print "Server ready"
 while True:
     try:
         message = socket.recv()
