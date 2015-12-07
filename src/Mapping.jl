@@ -49,15 +49,15 @@ end
 function update!(odo::Odometer)
     current_position = position(odo.motor)
     delta = current_position - odo.last_position
-    if abs(delta) > odo.ticks_per_revolution / 2
-        # @show current_position
-        # @show odo.last_position
-        delta = mod(delta, odo.ticks_per_revolution)
-        if delta > odo.ticks_per_revolution / 2
-            delta = delta - odo.ticks_per_revolution
-        end
-        # @show delta
-    end
+    # if abs(delta) > odo.ticks_per_revolution / 2
+    #     # @show current_position
+    #     # @show odo.last_position
+    #     delta = mod(delta, odo.ticks_per_revolution)
+    #     if delta > odo.ticks_per_revolution / 2
+    #         delta = delta - odo.ticks_per_revolution
+    #     end
+    #     # @show delta
+    # end
     odo.last_position = current_position
     new_distance = delta * odo.meters_per_tick
     odo.total_distance += new_distance
@@ -68,7 +68,6 @@ type State
     pose::AffineTransform
     last_wheel_distances::Sides
     last_orientation::Number
-    head_direction::Number
 end
 
 type SensorData
@@ -116,14 +115,14 @@ end
 
 
 function update_input!(robot::Robot, t, state::State, input::SensorData)
-    input.gyro = values(robot.sensors.gyro)[1] * pi / 180
+    input.gyro = -values(robot.sensors.gyro)[1] * pi / 180
     input.ultrasound = values(robot.sensors.ultrasound)[1] / 100
     input.total_wheel_distances = Sides(map(update!, robot.sensors.odos)...)
     input.head_angle = -position(robot.head) * 12 / 36 * pi / 180
 end
 
 function update_state!(robot::Robot, t, state::State, input::SensorData)
-    angle_change = -(input.gyro - state.last_orientation)
+    angle_change = input.gyro - state.last_orientation
     wheel_distances = [getfield(input.total_wheel_distances, field) - getfield(state.last_wheel_distances, field) for field in [:right, :left]]
     state.pose *= tformrigid([angle_change, mean(wheel_distances), 0])
     state.last_wheel_distances = input.total_wheel_distances
@@ -156,8 +155,7 @@ function run_mapping(robot::Robot; timeout=30, initial_pose=tformeye(2))
 
     state = State(initial_pose,
                   Sides(0.0, 0.0),
-                  0.0,
-                  1)
+                  -values(robot.sensors.gyro)[1] * pi / 180)
     input = SensorData()
     start_time = time()
     local_map = Map()
