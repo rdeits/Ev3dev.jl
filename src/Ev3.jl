@@ -197,6 +197,8 @@ function stop(motor::Motor, stop_command_name="coast")
 end
 
 
+include("Behaviors.jl")
+include("mapping_behaviors.jl")
 include("Mapping.jl")
 
 

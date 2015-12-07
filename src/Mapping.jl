@@ -128,86 +128,6 @@ function update_state!(robot::Robot, t, state::State, input::SensorData)
     state.pose *= tformrigid([angle_change, mean(wheel_distances), 0])
     state.last_wheel_distances = input.total_wheel_distances
     state.last_orientation = input.gyro
-    if state.head_direction > 0 && input.head_angle > pi/4
-        state.head_direction = -1
-    elseif state.head_direction < 0 && input.head_angle < -pi/4
-        state.head_direction = 1
-    end
-end
-
-immutable Transition
-    test::Function
-    destination
-end
-
-type Behavior
-    action::Function
-    transitions::Vector{Transition}
-
-    Behavior(action::Function) = new(action, Transition[])
-end
-
-function add_transition!(behavior::Behavior, transition::Transition)
-    push!(behavior.transitions, transition)
-end
-
-function drive_forward(robot, t, state, input)
-    speed_sp(robot.motors.right, 60)
-    speed_sp(robot.motors.left, 60)
-    command(robot.motors.right, "run-forever")
-    command(robot.motors.left, "run-forever")
-    position_sp(robot.head, -state.head_direction * 80 * 3)
-    command(robot.head, "run-to-abs-pos")
-end
-
-function turn_right(robot, t, state, input)
-    speed_sp(robot.motors.right, -70)
-    speed_sp(robot.motors.left, 20)
-    command(robot.motors.right, "run-forever")
-    command(robot.motors.left, "run-forever")
-    position_sp(robot.head, -state.head_direction * 80 * 3)
-    command(robot.head, "run-to-abs-pos")
-end
-
-function stop(robot, t, state, input)
-    stop(robot.motors.right, "brake")
-    stop(robot.motors.left, "brake")
-    stop(robot.head, "coast")
-end
-
-
-type BehaviorSet
-    behaviors::Vector{Behavior}
-    starting::Behavior
-    final::Behavior
-end
-
-function next(behavior::Behavior, robot, t, state, input)
-    for transition in behavior.transitions
-        if transition.test(robot, t, state, input)
-            behavior = transition.destination
-            break
-        end
-    end
-    behavior
-end
-
-function setup_mapping_behaviors(timeout=30)
-    FORWARD = Behavior(drive_forward)
-    TURN_RIGHT = Behavior(turn_right)
-    STOP = Behavior(stop)
-    DONE = Behavior(stop)
-    add_transition!(FORWARD, Transition((robot, t, state, input) -> input.ultrasound < 0.25, 
-                                        TURN_RIGHT))
-    add_transition!(TURN_RIGHT, Transition((robot, t, state, input) -> input.ultrasound > 0.5,
-                                           FORWARD))
-    for behavior in [FORWARD, TURN_RIGHT]
-        add_transition!(behavior, Transition((robot, t, state, input) -> t > timeout,
-                                              STOP))
-    end
-    add_transition!(STOP, Transition((robot, t, state, input) -> true, DONE))
-
-    BehaviorSet([FORWARD, TURN_RIGHT, STOP, DONE], FORWARD, DONE)
 end
 
 type Map
@@ -234,7 +154,7 @@ end
 function run_mapping(robot::Robot; timeout=30, initial_pose=tformeye(2))
     behaviors = setup_mapping_behaviors(timeout)
 
-    current_behavior = behaviors.starting
+    current_behaviors = behaviors.starting
 
     state = State(initial_pose,
                   Sides(0.0, 0.0),
@@ -246,7 +166,7 @@ function run_mapping(robot::Robot; timeout=30, initial_pose=tformeye(2))
     prep!(robot)
 
     try
-        while current_behavior != behaviors.final
+        while !all(current_behaviors .== behaviors.final)
             t = time() - start_time
             update_input!(robot, t, state, input)
             update_state!(robot, t, state, input)
@@ -255,8 +175,8 @@ function run_mapping(robot::Robot; timeout=30, initial_pose=tformeye(2))
                 push!(local_map.points, (new_map_point.offset...))
             end
             push!(local_map.path, state.pose)
-            current_behavior = next(current_behavior, robot, t, state, input)
-            current_behavior.action(robot, t, state, input)
+            current_behaviors = map(b -> next(b, robot, t, state, input), current_behaviors)
+            map(b -> b.action(robot, t, state, input), current_behaviors)
         end
     finally
         shutdown!(robot)
