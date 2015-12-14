@@ -6,7 +6,8 @@ import Base: parse, read, write
 
 export Device,
        Sensor, 
-       Motor
+       Motor, 
+       connect_to_robot
 
 SYS_ROOT = "/sys"
 

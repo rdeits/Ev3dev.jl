@@ -10,22 +10,21 @@ end
 
 immutable RemoteNode <: AbstractNode
     path::AbstractString
-    hostname::AbstractString
     socket::Socket
 end
 
-function RemoteNode(path::AbstractString, hostname::AbstractString)
+function connect_to_robot(hostname::AbstractString)
     socket = Socket(CONTEXT, REQ)
     ZMQ.connect(socket, "tcp://$(hostname):5555")
-    RemoteNode(path, hostname, socket)
+    socket
 end
 
-function write(node::LocalNode, path::AbstractString, data::AbstractString)
-    open(f -> write(f, data), joinpath(node.path, path))
+function write(node::LocalNode, relative_path::AbstractString, data::AbstractString)
+    open(f -> write(f, data), joinpath(node.path, relative_path))
 end
 
-function write(node::RemoteNode, path::AbstractString, data::AbstractString)
-    command = "w:$(data):$(node.path)/$(path)"
+function write(node::RemoteNode, relative_path::AbstractString, data::AbstractString)
+    command = "w:$(data):$(node.path)/$(relative_path)"
     ZMQ.send(node.socket, command)
     msg = ZMQ.recv(node.socket)
     out = convert(IOStream, msg)
@@ -51,12 +50,3 @@ function list(node::RemoteNode)
     return split(chomp(bytestring(out)), "\n")
 end
 
-function find_device_on_port(node::RemoteNode, port_name)
-    for device in list(node)
-        devnode = RemoteNode("$(node.path)/$(device)", node.hostname)
-        if strip(read(devnode, "port_name")) == port_name
-            return devnode
-        end
-    end
-    error("Could not find device with port_name: $(port_name) on node: $(node)")
-end
