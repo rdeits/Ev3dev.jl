@@ -1,5 +1,6 @@
 module Ev3
 
+using ZMQ
 import Base: parse, read, write
 
 export Device,

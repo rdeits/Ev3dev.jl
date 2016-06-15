@@ -1,4 +1,3 @@
-using ZMQ
 
 CONTEXT = Context()
 
@@ -49,4 +48,3 @@ function list(node::RemoteNode)
     seek(out, 0)
     return split(chomp(bytestring(out)), "\n")
 end
-
