@@ -7,7 +7,7 @@ end
 immutable Motor <: AbstractDevice
     node::AbstractNode
     commands::Set
-    
+
     Motor(node::AbstractNode) = begin
         commands = Set(split(chomp(read(node, "commands"))))
         new(node, commands)
@@ -35,9 +35,9 @@ read(node::AbstractNode, path::AbstractString, _type::Union{Integer, AbstractFlo
 function find_device_on_port(node::RemoteNode, port_name)
     for device in list(node)
         devnode = RemoteNode("$(node.path)/$(device)", node.socket)
-        if strip(read(devnode, "port_name")) == port_name
+        if strip(read(devnode, "address")) == port_name
             return devnode
         end
     end
-    error("Could not find device with port_name: $(port_name) on node: $(node)")
+    error("Could not find device with address: $(port_name) on node: $(node)")
 end
