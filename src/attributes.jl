@@ -3,7 +3,7 @@ immutable Attribute{T, Read, Write}
     stream::IOStream
 end
 
-function call{T, Read, Write}(::Type{Attribute{T, Read, Write}}, brick::Brick, relative_path::AbstractString, name)
+function call{T, Read, Write}(::Type{Attribute{T, Read, Write}}, brick::Brick, relative_path::AbstractString, name::Symbol)
     path = joinpath(brick.root_path, relative_path, string(name))
     isfile(path) || error("file not found: $path")
     Read && (isreadable(path) || error("read access for attribute $(path) was requested, but file is not readable"))
