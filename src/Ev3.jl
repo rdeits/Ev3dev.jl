@@ -24,5 +24,34 @@ function values(sensor::Device{LegoSensor})
     vals
 end
 
+function run(dev::Device{TachoMotor}, speed::Integer)
+    dev.attr.speed_sp(speed)
+    command(dev, "run-continuous")
+end
+
+function run(dev::Device{TachoMotor}, speed::Integer, timeout_ms::Integer)
+    dev.attr.time_sp(timeout_ms)
+    dev.attr.speed_sp(speed)
+    command(dev, "run-timed")
+end
+
+function stop(dev::Device{TachoMotor}, stop_action::AbstractString)
+    dev.attr.stop_action(stop_action)
+    command(dev, "stop")
+end
+
+function run_to_position(dev::Device{TachoMotor}, degrees::Integer, absolute=true)
+    ticks = int(round(absolute_degrees / 360. * dev.attr.count_per_rot()))
+    dev.attr.position_sp(ticks)
+    if absolute
+        command(dev, "run-to-abs-pos")
+    else
+        command(dev, "run-to-rel-pos")
+    end
+end
+
+
+
+
 
 end
