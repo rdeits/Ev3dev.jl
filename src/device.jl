@@ -60,7 +60,7 @@ type TachoMotor <: Class{:tacho_motor}
     duty_cycle_sp::ReadWrite{Int}
     speed_sp::ReadWrite{Int}
     position_sp::ReadWrite{Int}
-    position::ReadOnly{Int}
+    position::ReadWrite{Int}
     polarity::ReadWrite{ASCIIString}
     stop_action::ReadWrite{ASCIIString}
     stop_actions::ReadOnly{Vector{ASCIIString}}
