@@ -10,12 +10,12 @@ function scaled_values(sensor::Device{LegoSensor})
     vals
 end
 
-function run(dev::Device{TachoMotor}, speed::Integer)
+function run_continuous(dev::Device{TachoMotor}, speed::Integer)
     dev.attr.speed_sp(speed)
     command(dev, "run-forever")
 end
 
-function run(dev::Device{TachoMotor}, speed::Integer, timeout_ms::Integer)
+function run_continuous(dev::Device{TachoMotor}, speed::Integer, timeout_ms::Integer)
     dev.attr.time_sp(timeout_ms)
     dev.attr.speed_sp(speed)
     command(dev, "run-timed")
