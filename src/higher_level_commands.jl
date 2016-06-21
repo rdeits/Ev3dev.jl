@@ -40,14 +40,14 @@ convert(::Type{Degrees}, rad::Radians) = radians.value * 180 / pi
 convert(::Type{Radians}, deg::Degrees) = degrees.value * pi / 180
 
 function servo_absolute(dev::Device{TachoMotor}, degrees::Degrees)
-    ticks = int(round(absolute_degrees / 360. * dev.attr.count_per_rot()))
+    ticks = round(Int, degrees.value / 360. * dev.attr.count_per_rot())
     dev.attr.position_sp(ticks)
     command(dev, "run-to-abs-pos")
 end
 servo_absolute(dev::Device{TachoMotor}, radians::Radians) = servo_absolute(dev, convert(Degrees, radians))
 
 function servo_relative(dev::Device{TachoMotor}, degrees::Degrees)
-    ticks = int(round(absolute_degrees / 360. * dev.attr.count_per_rot()))
+    ticks = round(Int, degrees.value / 360. * dev.attr.count_per_rot())
     dev.attr.position_sp(ticks)
     command(dev, "run-to-rel-pos")
 end
