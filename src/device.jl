@@ -32,7 +32,7 @@ function find_devices{T <: Device}(::Type{T}, brick::Brick)
     driver = driver_name(T)
     for dir in readdir(path)
         device_driver = open(joinpath(path, dir, "driver_name")) do f
-            readchomp(f)
+            chomp(strip(readline(f)))
         end
         if device_driver == driver
             push!(devices, T(brick, joinpath(path, dir)))
@@ -60,6 +60,7 @@ type TachoMotor <: Class{:tacho_motor}
     duty_cycle_sp::ReadWrite{Int}
     speed_sp::ReadWrite{Int}
     position_sp::ReadWrite{Int}
+    position::ReadOnly{Int}
     polarity::ReadWrite{ASCIIString}
     stop_action::ReadWrite{ASCIIString}
     stop_actions::ReadOnly{Vector{ASCIIString}}
