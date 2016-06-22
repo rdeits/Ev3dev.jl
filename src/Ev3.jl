@@ -1,3 +1,5 @@
+__precompile__()
+
 module Ev3
 
 import Base: read, parse, write, call
