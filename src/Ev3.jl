@@ -11,8 +11,8 @@ immutable Brick
 end
 
 include("attributes.jl")
-include("device.jl")
-include("device_types.jl")
+include("classes.jl")
+include("devices.jl")
 include("higher_level_commands.jl")
 
 export Brick,
