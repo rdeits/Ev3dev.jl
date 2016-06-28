@@ -1,5 +1,5 @@
 using Base.Test
-using Ev3
+using Ev3dev
 
 include("mock.jl")
 
