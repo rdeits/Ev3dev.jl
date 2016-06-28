@@ -11,12 +11,14 @@ function scaled_values(sensor::LegoSensor)
 end
 
 function run_continuous(dev::TachoMotor, speed::Integer)
+    dev.attr.speed_regulation("on")
     dev.attr.speed_sp(speed)
     command(dev, "run-forever")
 end
 
 function run_continuous(dev::TachoMotor, speed::Integer, timeout_ms::Integer)
     dev.attr.time_sp(timeout_ms)
+    dev.attr.speed_regulation("on")
     dev.attr.speed_sp(speed)
     command(dev, "run-timed")
 end
@@ -39,15 +41,19 @@ end
 convert(::Type{Degrees}, rad::Radians) = radians.value * 180 / pi
 convert(::Type{Radians}, deg::Degrees) = degrees.value * pi / 180
 
-function servo_absolute(dev::TachoMotor, degrees::Degrees)
+function servo_absolute(dev::TachoMotor, degrees::Degrees, speed=nothing)
     ticks = round(Int, degrees.value / 360. * dev.attr.count_per_rot())
+    dev.attr.speed_regulation("on")
+    (speed !== nothing) && dev.attr.speed_sp(speed)
     dev.attr.position_sp(ticks)
     command(dev, "run-to-abs-pos")
 end
 servo_absolute(dev::TachoMotor, radians::Radians) = servo_absolute(dev, convert(Degrees, radians))
 
-function servo_relative(dev::TachoMotor, degrees::Degrees)
+function servo_relative(dev::TachoMotor, degrees::Degrees, speed=nothing)
     ticks = round(Int, degrees.value / 360. * dev.attr.count_per_rot())
+    dev.attr.speed_regulation("on")
+    (speed !== nothing) && dev.attr.speed_sp(speed)
     dev.attr.position_sp(ticks)
     command(dev, "run-to-rel-pos")
 end

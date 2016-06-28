@@ -40,6 +40,7 @@ const attributes = Dict(
     ("position_sp", true, true, "90"),
     ("position", true, true, "0"),
     ("polarity", true, true, "normal"),
+    ("speed_regulation", true, true, "off"),
     ("stop_command", true, true, "brake"),
     ("stop_commands", true, false, "brake coast hold")
 ],
@@ -54,6 +55,7 @@ const attributes = Dict(
     ("position_sp", true, true, "90"),
     ("position", true, true, "0"),
     ("polarity", true, true, "normal"),
+    ("speed_regulation", true, true, "off"),
     ("stop_command", true, true, "brake"),
     ("stop_commands", true, false, "brake coast hold")
 ],

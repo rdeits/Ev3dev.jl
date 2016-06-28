@@ -18,6 +18,7 @@ type TachoMotorClass <: Class{:tacho_motor}
     duty_cycle::ReadOnly{Int}
     duty_cycle_sp::ReadWrite{Int}
     speed_sp::ReadWrite{Int}
+    speed_regulation::ReadWrite{ASCIIString}
     position_sp::ReadWrite{Int}
     position::ReadWrite{Int}
     polarity::ReadWrite{ASCIIString}
