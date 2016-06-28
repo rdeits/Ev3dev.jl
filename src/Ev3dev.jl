@@ -1,6 +1,6 @@
 __precompile__()
 
-module Ev3
+module Ev3dev
 
 import Base: read, parse, write, call
 
