@@ -1,13 +1,13 @@
 abstract Driver{Name}
 
 type Device{C <: Class, D <: Driver}
-    attr::C
+    io::C
     commands::Set{ASCIIString}
 
     function Device(brick, path)
-        attr = C(brick, path)
-        commands = Set{ASCIIString}(attr.commands())
-        new(attr, commands)
+        io = C(brick, path)
+        commands = Set{ASCIIString}(io.commands())
+        new(io, commands)
     end
 end
 
@@ -32,7 +32,7 @@ end
 
 function find_device_at_address{T <: Device}(::Type{T}, brick::Brick, address::AbstractString)
     for dev in find_devices(T, brick)
-        if dev.attr.address() == address
+        if dev.io.address() == address
             return dev
         end
     end
