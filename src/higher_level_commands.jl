@@ -21,8 +21,8 @@ function run_continuous(dev::TachoMotor, speed::Integer, timeout_ms::Integer)
     command(dev, "run-timed")
 end
 
-function stop(dev::TachoMotor, stop_action::AbstractString="brake")
-    dev.attr.stop_action(stop_action)
+function stop(dev::TachoMotor, stop_command::AbstractString="brake")
+    dev.attr.stop_command(stop_command)
     command(dev, "stop")
 end
 

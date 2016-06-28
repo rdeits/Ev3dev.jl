@@ -21,8 +21,8 @@ type TachoMotorClass <: Class{:tacho_motor}
     position_sp::ReadWrite{Int}
     position::ReadWrite{Int}
     polarity::ReadWrite{ASCIIString}
-    stop_action::ReadWrite{ASCIIString}
-    stop_actions::ReadOnly{Vector{ASCIIString}}
+    stop_command::ReadWrite{ASCIIString}
+    stop_commands::ReadOnly{Vector{ASCIIString}}
 
     TachoMotorClass() = new()
 end

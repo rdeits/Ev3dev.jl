@@ -40,8 +40,8 @@ const attributes = Dict(
     ("position_sp", true, true, "90"),
     ("position", true, true, "0"),
     ("polarity", true, true, "normal"),
-    ("stop_action", true, true, "brake"),
-    ("stop_actions", true, false, "brake coast hold")
+    ("stop_command", true, true, "brake"),
+    ("stop_commands", true, false, "brake coast hold")
 ],
 :medium_motor => [
     ("commands", true, false, "run-forever run-timed stop"),
@@ -54,8 +54,8 @@ const attributes = Dict(
     ("position_sp", true, true, "90"),
     ("position", true, true, "0"),
     ("polarity", true, true, "normal"),
-    ("stop_action", true, true, "brake"),
-    ("stop_actions", true, false, "brake coast hold")
+    ("stop_command", true, true, "brake"),
+    ("stop_commands", true, false, "brake coast hold")
 ],
 :ultrasound_sensor => [
     ("commands", true, false, ""),
