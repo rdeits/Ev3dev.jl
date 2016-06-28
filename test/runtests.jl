@@ -20,7 +20,7 @@ let
         @test length(medium_motors) == 1
 
         right_motor = find_device_at_address(LargeMotor, brick, "outA")
-        @test right_motor.attr.address() == "outA"
+        @test right_motor.io.address() == "outA"
 
         ultrasound_sensor = find_devices(UltrasoundSensor, brick)[1]
 
