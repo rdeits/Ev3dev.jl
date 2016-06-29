@@ -1,4 +1,4 @@
-The StateMachineIterators.jl package is licensed under the MIT "Expat" License:
+The Ev3dev.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2016: Robin Deits.
 >
