@@ -34,6 +34,14 @@ If all went well, you should now be able to access the `ev3dev` sensor and motor
 cat ~/Ev3/sys/class/lego-sensor/sensor0/driver_name
 ```
 
+# Installing Ev3dev.jl
+
+This package is not yet registered, but you can install it with:
+
+```julia
+Pkg.clone("git://github.com/rdeits/Ev3dev.jl.git")
+```
+
 # Usage
 
 To use `Ev3dev.jl`, we first have to define a `Brick`, which represents a single EV3 or BrickPi device. To do that, we need to know where the root of the `ev3dev` filesystem is. If you're on a BrickPi, it's probably just `"/"`. If you mounted an EV3 over sshfs as in the previous step, it's `"/home/pi/Ev3"`.
